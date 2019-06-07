@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  client:
+    build: ./client
+    volumes:
+      - ./var/output:/curl/output
+
+  geth:
+    build: ./geth/
+    volumes:
+      - ${PWD}/var/chain:/root/.ethereum
+
+  playbook:
+    build: ./playbook/
+    volumes:
+      - ${PWD}/var/chain:/var/chain
+      - ${PWD}/playbook/playbook.yml:/root/playbook.yml:ro
+      - ${PWD}/contracts:/root/contracts:ro
+

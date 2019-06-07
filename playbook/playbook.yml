@@ -1,0 +1,73 @@
+---
+INVENTORY:
+  testnet:
+    - http://geth:8545
+  genesis:
+    - /var/chain/geth.ipc
+
+WALLETS:
+  god:
+    privkey: "9f0c9b9359b10a38e08cfde1fd64b84c92335b5915dbb784e01f6bcc97c6099d"
+  guy:
+    privkey: "452276b3751f0f8ed80bf86c777d6360eeb2a14061fc921862b411d49677987a"
+
+CONTRACTS:
+  ausd-token:
+    name: ERC20Proxy
+    sol: ./contracts/AUSD.sol
+    instances:
+      - &AUSD1
+        contract: ausd-token
+        address: 0x0
+
+CALL:
+  eth-balances:
+    wallet: .
+    method: eth_getBalance
+    params:
+      - {type: address, value: @@}
+      - latest
+  txinfo:
+    method: eth_getTransactionByHash
+    params:
+      - {type: string, reference: $1}
+  txreceipt:
+    method: eth_getTransactionReceipt
+    params:
+      - {type: string, reference: $1}
+
+VIEW:
+  get-owner:
+    instance: *AUSD1
+    method: owner
+
+  token-balances:
+    wallet: .
+    instance: *AUSD1
+    method: balanceOf
+    params:
+      - {type: address, value: @@}
+
+WRITE:
+  deploy-ausd-token:
+    wallet: god
+    instance:
+      contract: ausd-token
+    params:
+      - Atlant US Dollar
+      - AUSD
+      - {type: uint8, value: 2}
+      - {type: address, value: @god}
+
+  transfer-50-tokens:
+    wallet: god
+    instance: *AUSD1
+    method: transfer
+    params:
+      - {type: address, value: @guy}
+      - {type: uint, value: 50 * 1e18}
+
+TARGETS:
+  run:
+    - deploy-ausd-token
+    - eth-balances @god
